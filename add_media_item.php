@@ -17,10 +17,22 @@
   	&& $_POST['media_item_title_input']
   )
   {
+  	$_SESSION['firephp']->log($_POST,"\$_POST");
   	//cleanup post data
   	foreach ($_POST as $key => $value)
   	{
-  		$_POST[$key] = stripcslashes($value);
+  		if(is_array($value))
+  		{
+  			foreach($_POST[$key] as $k => $v)
+  			{
+  				$_POST[$key][$k] = stripslashes($v);
+  			}
+  		}
+  		else
+  		{
+  			$_POST[$key] = stripslashes($value);
+  		}
+  		
   	}
   	$query = "insert into media_items (id,title,media_type_id,length,image_location,rating,notes,medium_id,barcode,isbn,storage_slot_id)
   	values(''
@@ -68,11 +80,12 @@
   	";
   	$_SESSION['firephp']->log($query,'query');
   	mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
+  	$_SESSION['firephp']->log($_POST['media_item_genre_input'],'$_POST[\'media_item_genre_input\']');
   	if(is_array($_POST['media_item_genre_input']))
-  	{
+  	{ 		
   		foreach($_POST['media_item_genre_input'] as $genre_id)
   		{
-  			$query = "insert into media genre (genre_id,media_item_id)
+  			$query = "insert into media_genre (genre_id,media_item_id)
   			values('$genre_id',LAST_INSERT_ID())
   			";
   			$_SESSION['firephp']->log($query);
@@ -86,27 +99,60 @@
   	
   }
   else {
+  	$media_item_array = array();
+  	if($_POST['edit'] && $_POST['media_item_id'])
+  	{
+  		$_POST['media_item_id'] = stripslashes($_POST['media_item_id']);
+  		$_SESSION['firephp']->warn('edit item');
+	    $query = "select * from media_items left outer join (storage_locations,storage_slots,media_types,mediums) 
+	    on (
+		  media_items.storage_slot_id = storage_slots.storage_slot_id
+	  	  and storage_slots.storage_location_id = storage_locations.storage_location_id
+	  	  and media_types.media_type_id = media_items.media_type_id
+	  	  and mediums.medium_id = media_items.medium_id
+	  	  )
+	    where media_items.id = '{$_POST['media_item_id']}'
+	  ";
+	  
+		$result = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
+		$media_item_array = mysql2array($result);
+		$media_item_array = $media_item_array[0];
+	  	$_SESSION['firephp']->log($media_item_array,'media_item_array');
+//	  	$query = "select genres.genre_title from genres left join media_genre on media_genre.genre_id = genres.genre_id
+//	  	where media_genre.media_item_id = {$result_row['id']}";
+//	  	$result = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
+//	  	$genre_array = mysql2array($result);
+  	}
 	$html .= "<form action='add_media_item.php' method='post'>
 	
 	<label for='media_item_title_input'>Title</label>
-	<input name='media_item_title_input' id='media_item_title_input' type='text'></input>
+	<input name='media_item_title_input' id='media_item_title_input' type='text' value='{$media_item_array['title']}'></input>
 	<div data-role='fieldcontain'>	
 		<label for='media_item_type_input'>Media Type</label>
 		<select name='media_item_type_input' id='media_item_type_input'>
 		<option data-placeholder='true'></option>
 		";
 		$query = "select * from media_types order by media_type_desc";
-		$query_result = mysql_query($query) or die(mysql_error());
+		$query_result = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
 		$media_types = mysql2array($query_result);
 		foreach ($media_types as $media_type_row)
 		{
-			$html .= "<option value='{$media_type_row['media_type_id']}'>{$media_type_row['media_type_desc']}</option>";
+			$selected = "";
+			if($media_item_array['media_type_id'] == $media_type_row['media_type_id'])
+			{
+				$selected = "selected='selected'";
+			}
+			$html .= "<option $selected value='{$media_type_row['media_type_id']}'>{$media_type_row['media_type_desc']}</option>";
 		}
+		preg_match('/(\d{2}):(\d{2}):\d{2}/',$media_item_array['length'],$matches);
+		$_SESSION['firephp']->log($matches,'matches');
+		$media_item_length_hours = $matches[1];
+		$media_item_length_minutes = $matches[2];
 		$html .= "</select><br />
 		<div id='media_item_length_input_div' style='display: none;'>
 		<label for='media_item_length_hours_input'>Length (hours:minutes)</label><br />
-		<input name='media_item_length_hours_input' id='media_item_length_hours_input' type='range' max='20' min='0'></input><br />
-		<input name='media_item_length_minutes_input' id='media_item_length_minutes_input' type='range' max='59' min='0'></input>
+		<input name='media_item_length_hours_input' id='media_item_length_hours_input' type='range' max='20' min='0' value='$media_item_length_hours'></input><br />
+		<input name='media_item_length_minutes_input' id='media_item_length_minutes_input' type='range' max='59' min='0' value='$media_item_length_minutes'></input>
 		</div>
 	
 	
@@ -115,26 +161,31 @@
 	<option data-placeholder='true'></option>
 	";
 	$query = "select * from mediums order by medium_title";
-	$query_result = mysql_query($query) or die(mysql_error());
+	$query_result = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
 	$mediums = mysql2array($query_result);
 	foreach ($mediums as $medium_row)
 	{
-		$html .= "<option value='{$medium_row['medium_id']}'>{$medium_row['medium_title']}</option>";
+		$selected = "";
+		if($media_item_array['medium_id'] == $medium_row['medium_id'])
+		{
+			$selected = "selected='selected'";
+		}
+		$html .= "<option $selected value='{$medium_row['medium_id']}'>{$medium_row['medium_title']}</option>";
 	}
 	$html .= "</select>
 	</div>
 			
 	<label for='media_item_rating_input'>Rating</label>
-	<input name='media_item_rating_input' id='media_item_rating_input' type='range' max='5' min='1'></input>
+	<input name='media_item_rating_input' id='media_item_rating_input' type='range' max='5' min='1' value='{$media_item_array['rating']}'></input>
 	
 	<label for='media_item_image_location_input'>Thumbnail Location (relative)</label>
-	<input name='media_item_image_location_input' id='media_item_image_location_input' type='text'></input>
+	<input name='media_item_image_location_input' id='media_item_image_location_input' type='text' value='{$media_item_array['image_location']}'></input>
 
 	<label for='media_item_barcode_input'>Barcode</label>
-	<input name='media_item_barcode_input' id='media_item_barcode_input' type='text'></input>
+	<input name='media_item_barcode_input' id='media_item_barcode_input' type='text' value='{$media_item_array['barcode']}'></input>
 
 	<label for='media_item_isbn_input'>ISBN</label>
-	<input name='media_item_isbn_input' id='media_item_isbn_input' type='text'></input>
+	<input name='media_item_isbn_input' id='media_item_isbn_input' type='text' value='{$media_item_array['isbn']}'></input>
 	
 	<label for='storage_location_input'>Storage Location</label><a id='edit_storage_location_button' data-role='button' style='float:right; z-index: 10;' href='edit_storage_location.php' data-iconpos='notext' data-icon='gear'>Edit</a>
 	<select name='storage_location_input' id='storage_location_input'>
@@ -144,7 +195,12 @@
 	$storage_locations = mysql2array($query_result);
 	foreach ($storage_locations as $storage_location_row)
 	{
-		$html .= "<option value='{$storage_location_row['storage_location_id']}'>{$storage_location_row['storage_title']}</option>";
+		$selected = "";
+		if($media_item_array['storage_location_id'] == $storage_location_row['storage_location_id'])
+		{
+			$selected = "selected='selected'";
+		}
+		$html .= "<option $selected value='{$storage_location_row['storage_location_id']}'>{$storage_location_row['storage_title']}</option>";
 	}
 	$html .= "</select>
 	<div data-role='fieldcontain' id='storage_slot_input_div'>
@@ -161,7 +217,7 @@
 		$genres = mysql2array($query_result);
 		foreach($genres as $genre_row)
 		{
-			$html .= "<input type='checkbox' name='media_item_genre_input' id='media_item_genre_{$genre_row['genre_id']}' value='{$genre_row['genre_id']}'></input>
+			$html .= "<input type='checkbox' name='media_item_genre_input[]' id='media_item_genre_{$genre_row['genre_id']}' value='{$genre_row['genre_id']}'></input>
 			<label for='media_item_genre_{$genre_row['genre_id']}'>{$genre_row['genre_title']}</label>";
 		}
 	$html .= "

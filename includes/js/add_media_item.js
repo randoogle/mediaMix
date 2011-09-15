@@ -2,7 +2,6 @@ $('div').live('pagecreate',function(){
 
 
 	$('#media_item_type_input').change(function(){
-		console.log(this.value);
 		if(this.value == 2)
 		{
 			$('#media_item_length_input_div').show('slow');
@@ -19,4 +18,5 @@ $('div').live('pagecreate',function(){
 	});
 	//now trigger it once so it will be populated on load
 	$('#storage_location_input').trigger('change');
+	$('#media_item_type_input').trigger('change');
 });

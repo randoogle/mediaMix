@@ -106,7 +106,7 @@
 	  		";
 	  	}
 		$html .= "
-			  		<li>$medium_html<h3>{$result_row['media_type_desc']}</h3>
+			  		<li>$medium_html<form style='float:right; z-index: 10;' method='POST' action='add_media_item.php'><input id='edit_media_item_button' type='submit' data-iconpos='notext' data-icon='gear' name='edit' value='true' title='edit'></input><input type='hidden' name='media_item_id' value='{$result_row['id']}' /></form><h3>{$result_row['media_type_desc']}</h3>
 			  			$rating";
   		if($result_row['length'])
   		{
@@ -123,6 +123,14 @@
   		if($result_row['isbn'])
   		{
   			$html .= "<br />ISBN: {$result_row['isbn']}";
+  		}
+  		if(count($genre_array))
+  		{
+  			$html .= "<br /><br />Tags: ";
+  			foreach ($genre_array as $genre_row)
+  			{
+  				$html .= "<span class='media_item_genre_title'>{$genre_row['genre_title']}</span>";	
+  			}
   		}
   		$html .= "
 			  		</li>
