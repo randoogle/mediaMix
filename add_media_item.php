@@ -18,6 +18,7 @@
   )
   {
   	$_SESSION['firephp']->log($_POST,"\$_POST");
+  	$query = "";
   	//cleanup post data
   	foreach ($_POST as $key => $value)
   	{
@@ -34,65 +35,126 @@
   		}
   		
   	}
-  	$query = "insert into media_items (id,title,media_type_id,length,image_location,rating,notes,medium_id,barcode,isbn,storage_slot_id)
-  	values(''
-  		,'{$_POST['media_item_title_input']}'
-  		,'{$_POST['media_item_type_input']}'";
-  	if($_POST['media_item_length_hours_input'] || $_POST['media_item_length_minutes_input'])
-  	{
-  		$query .= "
-		,'{$_POST['media_item_length_hours_input']}:{$_POST['media_item_length_minutes_input']}:00'
-  		";	
-  	}
-  	else
-  	{
-  		$query .= ",null";
-  	}
-  	if(preg_match('@^http://.*@',$_POST['media_item_image_location_input']))
-  	{
-  		$remote_image = file_get_contents($_POST['media_item_image_location_input']);
-  		preg_match('@(.*?)\.([^\.]+)$@',basename($_POST['media_item_image_location_input']),$matches);
-  		$_SESSION['firephp']->log($matches);
-  		$local_image_name = urldecode($matches[1]);
-  		$local_image_ext = $matches[2];
-  		$counter = 2;
-  		while(file_exists('images/media_items/' . $local_image_name))
-  		{
-  			$local_image_name = $local_image_name . "($counter)";
-  			$counter++;
-  		}
-  		$fp = fopen("images/media_items/$local_image_name.$local_image_ext");
-  		fwrite($fp,$remote_image);
-  		$query .= ",'$local_image_name.$local_image_ext'";
+  	if($_POST['media_item_id_input'])
+  	{//UPDATE EXISTING RECORD
+  		$query = "update media_items
+  			set 
+  				title='{$_POST['media_item_title_input']}',
+  				media_type_id='{$_POST['media_item_type_input']}',
+  		";
+ 		//length
+  		if($_POST['media_item_length_hours_input'] || $_POST['media_item_length_minutes_input'])
+	  	{
+	  		$query .= "
+			    length='{$_POST['media_item_length_hours_input']}:{$_POST['media_item_length_minutes_input']}:00',
+	  		";	
+	  	}
+	  	
+	  	//capture image from website if the image location is a URL
+  		if(preg_match('@^http://.*@',$_POST['media_item_image_location_input']))
+	  	{
+	  		$filename = save_image($_POST['media_item_image_location_input'],'images/media_items/');
+	  		if(!$filename)
+	  		{
+	  			$_SESSION['firephp']->error("there was a problem saving {$_POST['media_item_image_location_input']}");
+	  		}
+	  		else 
+	  		{
+	  			$query .= "image_location='$filename',";
+	  		}
+	  	}
+	  	else 
+	  	{
+	  		$query .= "image_location='{$_POST['media_item_image_location_input']}',";
+	  	}
+	  	$query .= "
+	  		rating='{$_POST['media_item_rating_input']}',
+	  		notes='{$_POST['media_item_notes_input']}',
+	  		medium_id='{$_POST['media_item_medium_input']}',
+	  		barcode='{$_POST['media_item_barcode_input']}',
+	  		isbn='{$_POST['media_item_isbn_input']}',
+	  		storage_slot_id='{$_POST['storage_slot_id_input']}'
+	  	where id = '{$_POST['media_item_id_input']}'
+	  	";
+	  	//genre query
+	  	$genre_query = "";
+  	  	if(is_array($_POST['media_item_genre_input']))
+	  	{
+	  		//delete all current genres for this media item
+	  		$genre_query_delete = "delete from media_genre where media_item_id = '{$_POST['media_item_id_input']}'";
+	  		mysql_query($genre_query_delete) or $_SESSION['firephp']->error(mysql_error());
+	  		
+	  		//now insert all the currently selected genres
+	  		foreach($_POST['media_item_genre_input'] as $genre_id)
+	  		{
+	  			$genre_query = "insert into media_genre (genre_id,media_item_id)
+	  			values('$genre_id','{$_POST['media_item_id_input']}')
+	  			";
+	  			mysql_query($genre_query) or $_SESSION['firephp']->error(mysql_error());
+	  		}
+	  	} 
   	}
   	else 
-  	{
-  		$query .= ",'{$_POST['media_item_image_location_input']}'";
+  	{//INSERT NEW RECORD
+	  	$query = "insert into media_items (id,title,media_type_id,length,image_location,rating,notes,medium_id,barcode,isbn,storage_slot_id)
+	  	values(''
+	  		,'{$_POST['media_item_title_input']}'
+	  		,'{$_POST['media_item_type_input']}'";
+	  	if($_POST['media_item_length_hours_input'] || $_POST['media_item_length_minutes_input'])
+	  	{
+	  		$query .= "
+			,'{$_POST['media_item_length_hours_input']}:{$_POST['media_item_length_minutes_input']}:00'
+	  		";	
+	  	}
+	  	else
+	  	{
+	  		$query .= ",null";
+	  	}
+	  	if(preg_match('@^http://.*@',$_POST['media_item_image_location_input']))
+	  	{
+	  		$filename = save_image($_POST['media_item_image_location_input'],'images/media_items/');
+	  		if(!$filename)
+	  		{
+	  			$_SESSION['firephp']->error("there was a problem saving {$_POST['media_item_image_location_input']}");
+	  		}
+	  		else 
+	  		{
+	  			$query .= ",'$filename'";
+	  		}
+	  	}
+	  	else 
+	  	{
+	  		$query .= ",'{$_POST['media_item_image_location_input']}'";
+	  	}
+	  	$query .= "
+	  		,'{$_POST['media_item_rating_input']}'
+	  		,'{$_POST['media_item_notes_input']}'
+	  		,'{$_POST['media_item_medium_input']}'
+	  		,'{$_POST['media_item_barcode_input']}'
+	  		,'{$_POST['media_item_isbn_input']}'
+	  		,'{$_POST['storage_slot_id_input']}'
+	  	)
+	  	";
+	  	//genre query
+	  	$genre_query = "";
+  	  	if(is_array($_POST['media_item_genre_input']))
+	  	{ 		
+	  		foreach($_POST['media_item_genre_input'] as $genre_id)
+	  		{
+	  			$genre_query = "insert into media_genre (genre_id,media_item_id)
+	  			values('$genre_id',LAST_INSERT_ID())
+	  			";
+	  			mysql_query($genre_query) or $_SESSION['firephp']->error(mysql_error());
+	  		}
+	  	} 
   	}
-  	$query .= "
-  		,'{$_POST['media_item_rating_input']}'
-  		,'{$_POST['media_item_notes_input']}'
-  		,'{$_POST['media_item_medium_input']}'
-  		,'{$_POST['media_item_barcode_input']}'
-  		,'{$_POST['media_item_isbn_input']}'
-  		,'{$_POST['storage_slot_id_input']}'
-  	)
-  	";
+
   	$_SESSION['firephp']->log($query,'query');
+  	$_SESSION['firephp']->log($genre_query,'query');
   	mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
-  	$_SESSION['firephp']->log($_POST['media_item_genre_input'],'$_POST[\'media_item_genre_input\']');
-  	if(is_array($_POST['media_item_genre_input']))
-  	{ 		
-  		foreach($_POST['media_item_genre_input'] as $genre_id)
-  		{
-  			$query = "insert into media_genre (genre_id,media_item_id)
-  			values('$genre_id',LAST_INSERT_ID())
-  			";
-  			$_SESSION['firephp']->log($query);
-  			mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
-  		}
-  	}
   	
+//  	$_SESSION['firephp']->log($_POST['media_item_genre_input'],'$_POST[\'media_item_genre_input\']');
+ 	
   	
 //  	mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
 //  	media_item_genre_input
@@ -100,6 +162,8 @@
   }
   else {
   	$media_item_array = array();
+  	$edit_media_item_hidden_input = "";
+  	
   	if($_POST['edit'] && $_POST['media_item_id'])
   	{
   		$_POST['media_item_id'] = stripslashes($_POST['media_item_id']);
@@ -118,13 +182,21 @@
 		$media_item_array = mysql2array($result);
 		$media_item_array = $media_item_array[0];
 	  	$_SESSION['firephp']->log($media_item_array,'media_item_array');
-//	  	$query = "select genres.genre_title from genres left join media_genre on media_genre.genre_id = genres.genre_id
-//	  	where media_genre.media_item_id = {$result_row['id']}";
-//	  	$result = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
-//	  	$genre_array = mysql2array($result);
+	  	
+	  	$query = "select * from genres left join media_genre on media_genre.genre_id = genres.genre_id
+	  	where media_genre.media_item_id = '{$_POST['media_item_id']}'";
+	  	$result = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
+	  	$temp_genre_array = mysql2array($result);
+	  	$genre_array = array();
+	  	foreach($temp_genre_array as $genre_row)
+	  	{
+	  		$genre_array[$genre_row['genre_id']] = true;
+	  	}
+	  	$_SESSION['firephp']->log($genre_array,'genre_array');
+	  	$edit_media_item_hidden_input = "<input type='hidden' name='media_item_id_input' value='{$media_item_array['id']}'></input>";
   	}
 	$html .= "<form action='add_media_item.php' method='post'>
-	
+	$edit_media_item_hidden_input
 	<label for='media_item_title_input'>Title</label>
 	<input name='media_item_title_input' id='media_item_title_input' type='text' value='{$media_item_array['title']}'></input>
 	<div data-role='fieldcontain'>	
@@ -185,13 +257,18 @@
 	<input name='media_item_barcode_input' id='media_item_barcode_input' type='text' value='{$media_item_array['barcode']}'></input>
 
 	<label for='media_item_isbn_input'>ISBN</label>
-	<input name='media_item_isbn_input' id='media_item_isbn_input' type='text' value='{$media_item_array['isbn']}'></input>
-	
+	<input name='media_item_isbn_input' id='media_item_isbn_input' type='text' value='{$media_item_array['isbn']}'></input>";
+	$storage_slot = "";
+	if($media_item_array['storage_slot_id'])
+	{
+		$storage_slot = "storage_slot='{$media_item_array['storage_slot_id']}'";
+	}
+	$html .= "
 	<label for='storage_location_input'>Storage Location</label><a id='edit_storage_location_button' data-role='button' style='float:right; z-index: 10;' href='edit_storage_location.php' data-iconpos='notext' data-icon='gear'>Edit</a>
-	<select name='storage_location_input' id='storage_location_input'>
+	<select name='storage_location_input' id='storage_location_input' $storage_slot>
 	";
 	$query = "select * from storage_locations order by storage_title";
-	$query_result = mysql_query($query) or die(mysql_error());
+	$query_result = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
 	$storage_locations = mysql2array($query_result);
 	foreach ($storage_locations as $storage_location_row)
 	{
@@ -217,7 +294,12 @@
 		$genres = mysql2array($query_result);
 		foreach($genres as $genre_row)
 		{
-			$html .= "<input type='checkbox' name='media_item_genre_input[]' id='media_item_genre_{$genre_row['genre_id']}' value='{$genre_row['genre_id']}'></input>
+			$checked = "";
+			if($genre_array[$genre_row['genre_id']])
+			{
+				$checked = "checked='checked'";
+			}
+			$html .= "<input $checked type='checkbox' name='media_item_genre_input[]' id='media_item_genre_{$genre_row['genre_id']}' value='{$genre_row['genre_id']}'></input>
 			<label for='media_item_genre_{$genre_row['genre_id']}'>{$genre_row['genre_title']}</label>";
 		}
 	$html .= "
@@ -225,7 +307,7 @@
 	</div>
 	
 	<label for='media_item_notes_input'>Notes</label>
-	<textarea name='media_item_notes_input' id='media_item_notes_input'></textarea>
+	<textarea name='media_item_notes_input' id='media_item_notes_input'>{$media_item_array['notes']}</textarea>
 	
 	<div data-role='fieldcontain'>
 		<a href='all_media.php' data-direction='reverse' data-role='button' data-inline='true'>Cancel</a>

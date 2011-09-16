@@ -24,7 +24,7 @@ TO DO:
   	<link rel="stylesheet" href="includes/css/jquery.mobile-1.0b2.min.css" />
   	<link rel="stylesheet" href="includes/css/mediaMix.css" />
 	<script type="text/javascript" src="includes/js/jquery-1.6.2.min.js"></script>
-	<script type="text/javascript" src="includes/js/jquery.mobile-1.0b2.min.js"></script>
+	<script type="text/javascript" src="includes/js/jquery.mobile-1.0b3.min.js"></script>
 	<script type="text/javascript" src="includes/js/add_media_item.js"></script>
 	</head>
 	<body>	

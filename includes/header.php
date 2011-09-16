@@ -1,4 +1,5 @@
 <?php
+  error_reporting(E_ERROR);
   include_once('includes/firephp.php');//allow for advanced debugging  
   include_once('includes/dbcons.php');//allow for db_connect()
   include_once('includes/array2htmlTable.php');//allow for array2html()
@@ -25,6 +26,32 @@
   	  	}
   	} catch (Exception $e) {
   		$_SESSION['firephp']->error($e);
+  	}
+  }
+  function save_image($image_url,$storage_folder)
+  {
+	$remote_image = file_get_contents($image_url);
+	  		
+	preg_match('@(.*?)\.([^\.]+)$@',basename($image_url),$matches);
+ 	
+  	$local_image_name = urldecode($matches[1]);
+  	$local_image_ext = $matches[2];
+  	$counter = 2;
+  	while(file_exists('images/media_items/' . $local_image_name . $local_image_ext))
+  	{
+  		$local_image_name = $local_image_name . "($counter)";
+  		$counter++;
+  	}
+  	$fp = fopen("{$storage_folder}$local_image_name.$local_image_ext",'c');
+  	$success = fwrite($fp,$remote_image);
+  	
+  	if(!$success)
+  	{
+  		return false;
+  	}
+  	else 
+  	{
+  		return "$local_image_name.$local_image_ext";	
   	}
   }
 ?>
