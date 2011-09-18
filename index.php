@@ -18,23 +18,18 @@ TO DO:
 <!DOCTYPE html> 
 <html> 
 	<head>
-	<title>MediaMix Database</title> 
-	
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-  	<link rel="stylesheet" href="includes/css/jquery.mobile-1.0b2.min.css" />
-  	<link rel="stylesheet" href="includes/css/mediaMix.css" />
-  	<link rel="apple-touch-icon" href="images/iOS_icon.png" />
-	<script type="text/javascript" src="includes/js/jquery-1.6.2.min.js"></script>
-	<script type="text/javascript" src="includes/js/jquery.mobile-1.0b3.min.js"></script>
-	<script type="text/javascript" src="includes/js/add_media_item.js"></script>
+	<title>MediaMix Database</title>'; 
+	include_once('includes/header.php');
+$html .= '
 	</head>
 	<body>	
 ';
-  include_once('includes/header.php');
+  
   $html .= "<div data-role='page' data-title='MediaMix Database'>
   	<div data-role='header'>MediaMix Database</div>
   	<div data-role='content'>
   	<ul data-role='listview' data-theme='g'>
+  	<li data-icon='plus'><a href='add_media_item.php'>Add New</a></li>
   	<li><form><input id='search_titles' type='search'></input></form></li>
   	<li><a href='all_media.php'>All Items</a></li>
   	<li>Genre

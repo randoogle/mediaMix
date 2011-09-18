@@ -86,7 +86,20 @@
 	  		}
 	  		else 
 	  		{
+	  			if(file_exists("images/media_items/{$result_row['image_location']}") && !file_exists("images/media_items/thumbs/{$result_row['image_location']}"))
+	  			{
+	  				$_SESSION['firephp']->log("images/media_items/{$result_row['image_location']} exists");
+	  				$_SESSION['firephp']->log("images/media_items/thumbs/{$result_row['image_location']} does not");
+	  				try{
+	  					make_thumb("images/media_items/{$result_row['image_location']}", "images/media_items/thumbs/{$result_row['image_location']}", 100);
+	  				}
+	  				catch(Exception $e)
+	  				{
+	  					$_SESSION['firephp']->error($e);
+	  				}
+	  			}
 	  			$image = "<image class='media_item_image' src='images/media_items/{$result_row['image_location']}' />";
+	  			$thumbnail = "<image class='media_item_image' src='images/media_items/thumbs/{$result_row['image_location']}' />";
 	  		}
 	  		
 	  	}
@@ -97,7 +110,7 @@
 	  	}
 	  	$rating .= "</div>";
 	  	$html .= "
-	  		<li>$image<h3>{$result_row['title']}</h3>
+	  		<li>$thumbnail<h3>{$result_row['title']}</h3>
 	  			<ul>";
 	  	if($image)
 	  	{
