@@ -26,7 +26,7 @@
   {
     foreach ($_GET as $key => $value)
   	{
-  		$_GET[$key] = stripslashes($value);
+  		$_GET[$key] = addslashes($value);
   	}
   }
   switch ($_GET['table'])
@@ -66,6 +66,7 @@
 	  		$html .= "<li data-role='list-divider'>$current_letter</li>";
 	  	}
 	  	$image = "";
+	  	$thumbnail = "";
 	  	$medium_html = $result_row['medium_title'];
 	  	if($result_row['medium_image_location'])
 	  	{

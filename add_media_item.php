@@ -26,12 +26,12 @@
   		{
   			foreach($_POST[$key] as $k => $v)
   			{
-  				$_POST[$key][$k] = stripslashes($v);
+  				$_POST[$key][$k] = addslashes($v);
   			}
   		}
   		else
   		{
-  			$_POST[$key] = stripslashes($value);
+  			$_POST[$key] = addslashes($value);
   		}
   		
   	}

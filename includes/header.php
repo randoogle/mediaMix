@@ -37,7 +37,7 @@
   	$local_image_name = urldecode($matches[1]);
   	$local_image_ext = $matches[2];
   	$counter = 2;
-  	while(file_exists('images/media_items/' . $local_image_name . $local_image_ext))
+  	while(file_exists("images/media_items/$local_image_name.$local_image_ext"))
   	{
   		$local_image_name = $local_image_name . "($counter)";
   		$counter++;
@@ -84,6 +84,10 @@
 					break;
 				case 'gif':
 					$source_image = imagecreatefromgif($src);
+					if($source_image === false)
+					{
+						$_SESSION['firephp']->error("unable to read gif image from $src");
+					}
 					break;
 				default:
 					//unsupported image type
@@ -116,10 +120,20 @@
 					imagepng($virtual_image,$dest,9);
 					break;
 				case 'bmp':
-					image2wbmp($virtual_image,$dest);
+					if(!image2wbmp($virtual_image,$dest))
+					{
+						$_SESSION['firephp']->error("unable to create bmp image $src at $dest");
+					}
 					break;
 				case 'gif':
-					imagegif($virtual_image,$dest);
+					if(!imagegif($virtual_image,$dest))
+					{
+						$_SESSION['firephp']->error("unable to create gif image $src at $dest");
+						if(!imagetypes() & IMG_GIF)
+						{
+							$_SESSION['firephp']->warn("gif image creation not supported on this system");	
+						}
+					}
 					break;
 				default:
 					//unsupported image type
