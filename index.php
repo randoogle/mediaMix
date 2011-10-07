@@ -26,11 +26,13 @@ $html .= '
 ';
   
   $html .= "<div data-role='page' data-title='MediaMix Database'>
-  	<div data-role='header'>MediaMix Database</div>
+  	<div data-role='header' data-position='inline'>
+  		<h2>MediaMix</h2>
+  		<a href='add_media_item.php' data-icon='plus'>Add New</a>
+  	</div>
   	<div data-role='content'>
   	<ul data-role='listview' data-theme='g'>
-  	<li data-icon='plus'><a href='add_media_item.php'>Add New</a></li>
-  	<li><form><input id='search_titles' type='search'></input></form></li>
+  	<!-- <li><form><input id='search_titles' type='search'></input></form></li> -->
   	<li><a href='all_media.php'>All Items</a></li>
   	<li>Genre
   		<ul data-role='listview'>

@@ -9,9 +9,9 @@
   </head>
   <body>";
   
-  $html .= "<div data-role='page' data-title='All Items'>
+  $html .= "<div data-role='page' data-title='All Items' data-add-back-btn='true'>
   <div data-role='content'>
-  	<div data-role='header'>Add Media Item</div>
+  	
   ";
   if($_POST['Save']
   	&& $_POST['media_item_title_input']
@@ -35,8 +35,10 @@
   		}
   		
   	}
+  	$media_id = "";
   	if($_POST['media_item_id_input'])
   	{//UPDATE EXISTING RECORD
+  		$media_id = $_POST['media_item_id_input'];
   		$query = "update media_items
   			set 
   				title='{$_POST['media_item_title_input']}',
@@ -76,6 +78,10 @@
 	  		storage_slot_id='{$_POST['storage_slot_id_input']}'
 	  	where id = '{$_POST['media_item_id_input']}'
 	  	";
+	  	
+	  	//update record
+	  	mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
+	  	
 	  	//genre query
 	  	$genre_query = "";
   	  	if(is_array($_POST['media_item_genre_input']))
@@ -92,7 +98,7 @@
 	  			";
 	  			mysql_query($genre_query) or $_SESSION['firephp']->error(mysql_error());
 	  		}
-	  	} 
+	  	}
   	}
   	else 
   	{//INSERT NEW RECORD
@@ -135,6 +141,15 @@
 	  		,'{$_POST['storage_slot_id_input']}'
 	  	)
 	  	";
+	  	
+	  	//insert record
+	  	mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
+	  	
+	  	$query = "select media_items.id from media_items where media_items.id = LAST_INSERT_ID()";
+	  	$query_result = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
+	  	$result_array = mysql2array($query_result);
+	  	$media_id = $result_array[0]['id'];
+	  	
 	  	//genre query
 	  	$genre_query = "";
   	  	if(is_array($_POST['media_item_genre_input']))
@@ -146,27 +161,35 @@
 	  			";
 	  			mysql_query($genre_query) or $_SESSION['firephp']->error(mysql_error());
 	  		}
-	  	} 
+	  	}
+	  	
   	}
+  	
 
-  	$_SESSION['firephp']->log($query,'query');
-  	$_SESSION['firephp']->log($genre_query,'query');
-  	mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
-  	
-//  	$_SESSION['firephp']->log($_POST['media_item_genre_input'],'$_POST[\'media_item_genre_input\']');
- 	
-  	
-//  	mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
-//  	media_item_genre_input
+  	$html .= "
+  		<div data-role='header'>
+  			<form style='float:right; margin-top: 5px;' method='POST' action='add_media_item.php'><input id='edit_media_item_button' type='submit' data-icon='gear' data-iconpos='right' name='Edit' value='Edit' title='edit'></input><input type='hidden' name='edit' value='true' title='edit'></input><input type='hidden' name='media_item_id' value='$media_id' /></form>
+  			<a href='index.php' data-icon='home'>Home</a>
+  			<h3>View Item</h3>
+  		</div>
+  	";
+  	$html .= mediaItemHtml($media_id);
   	
   }
   else {
+  	$html .= "
+  	<div data-role='header' data-position='fixed'>
+	  	<a href='index.php' data-rel='back' data-icon='delete'>Cancel</a>
+	  	<h1>Add Media</h1>
+	  	<a data-icon='check' data-theme='a'>Save</a>
+  	</div>
+  	";
   	$media_item_array = array();
   	$edit_media_item_hidden_input = "";
   	
   	if($_POST['edit'] && $_POST['media_item_id'])
   	{
-  		$_POST['media_item_id'] = stripslashes($_POST['media_item_id']);
+  		$_POST['media_item_id'] = addslashes($_POST['media_item_id']);
   		$_SESSION['firephp']->warn('edit item');
 	    $query = "select * from media_items left outer join (storage_locations,storage_slots,media_types,mediums) 
 	    on (
@@ -198,7 +221,7 @@
 	$html .= "<form action='add_media_item.php' method='post'>
 	$edit_media_item_hidden_input
 	<label for='media_item_title_input'>Title</label>
-	<input name='media_item_title_input' id='media_item_title_input' type='text' value='{$media_item_array['title']}'></input>
+	<input name='media_item_title_input' id='media_item_title_input' type='text' value='". preg_replace("/'/","&#39;",$media_item_array['title']) . "'></input>
 	<div data-role='fieldcontain'>	
 		<label for='media_item_type_input'>Media Type</label>
 		<select name='media_item_type_input' id='media_item_type_input'>
@@ -221,12 +244,6 @@
 		$media_item_length_hours = $matches[1];
 		$media_item_length_minutes = $matches[2];
 		$html .= "</select><br />
-		<div id='media_item_length_input_div' style='display: none;'>
-		<label for='media_item_length_hours_input'>Length (hours:minutes)</label><br />
-		<input name='media_item_length_hours_input' id='media_item_length_hours_input' type='range' max='20' min='0' value='$media_item_length_hours'></input><br />
-		<input name='media_item_length_minutes_input' id='media_item_length_minutes_input' type='range' max='59' min='0' value='$media_item_length_minutes'></input>
-		</div>
-	
 	
 	<label for='media_item_medium_input'>Medium</label>
 	<select name='media_item_medium_input' id='media_item_medium_input'>
@@ -245,7 +262,15 @@
 		$html .= "<option $selected value='{$medium_row['medium_id']}'>{$medium_row['medium_title']}</option>";
 	}
 	$html .= "</select>
+	
+		<div id='media_item_length_input_div' style='display: none;'>
+		<label for='media_item_length_hours_input'>Length (hours:minutes)</label><br />
+		<input name='media_item_length_hours_input' id='media_item_length_hours_input' type='range' max='20' min='0' value='$media_item_length_hours'></input><br />
+		<input name='media_item_length_minutes_input' id='media_item_length_minutes_input' type='range' max='59' min='0' value='$media_item_length_minutes'></input>
+		</div>
+	
 	</div>
+
 			
 	<label for='media_item_rating_input'>Rating</label>
 	<input name='media_item_rating_input' id='media_item_rating_input' type='range' max='5' min='1' value='{$media_item_array['rating']}'></input>
