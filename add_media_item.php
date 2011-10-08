@@ -191,13 +191,11 @@
   	{
   		$_POST['media_item_id'] = addslashes($_POST['media_item_id']);
   		$_SESSION['firephp']->warn('edit item');
-	    $query = "select * from media_items left outer join (storage_locations,storage_slots,media_types,mediums) 
-	    on (
-		  media_items.storage_slot_id = storage_slots.storage_slot_id
-	  	  and storage_slots.storage_location_id = storage_locations.storage_location_id
-	  	  and media_types.media_type_id = media_items.media_type_id
-	  	  and mediums.medium_id = media_items.medium_id
-	  	  )
+	    $query = "select * from media_items
+		left outer join storage_slots on media_items.storage_slot_id = storage_slots.storage_slot_id 
+		left outer join storage_locations on storage_slots.storage_location_id = storage_locations.storage_location_id
+		left outer join media_types on media_types.media_type_id = media_items.media_type_id
+		left outer join mediums on mediums.medium_id = media_items.medium_id
 	    where media_items.id = '{$_POST['media_item_id']}'
 	  ";
 	  
