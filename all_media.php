@@ -24,11 +24,11 @@
   	<div data-role='content'>
   ";
   
-  $query = "select * from  media_items 
-	left outer join storage_slots on media_items.storage_slot_id = storage_slots.storage_slot_id 
-	left outer join storage_locations on storage_slots.storage_location_id = storage_locations.storage_location_id
-	left outer join media_types on media_types.media_type_id = media_items.media_type_id
-	left outer join mediums on mediums.medium_id = media_items.medium_id ";
+  $query = "select * from  media_items ";
+//	left outer join storage_slots on media_items.storage_slot_id = storage_slots.storage_slot_id 
+//	left outer join storage_locations on storage_slots.storage_location_id = storage_locations.storage_location_id
+//	left outer join media_types on media_types.media_type_id = media_items.media_type_id
+//	left outer join mediums on mediums.medium_id = media_items.medium_id ";
   if(count($_GET))
   {
     foreach ($_GET as $key => $value)
@@ -79,7 +79,7 @@
   				$_SESSION['firephp']->log("images/media_items/{$result_row['image_location']} exists");
   				$_SESSION['firephp']->log("images/media_items/thumbs/{$result_row['image_location']} does not");
   				try{
-  					make_thumb("images/media_items/{$result_row['image_location']}", "images/media_items/thumbs/{$result_row['image_location']}", 100);
+  					make_thumb("images/media_items/{$result_row['image_location']}", "images/media_items/thumbs/{$result_row['image_location']}", 50);
   				}
   				catch(Exception $e)
   				{
@@ -89,20 +89,22 @@
 	  	$thumbnail = "<image class='media_item_image' src='images/media_items/thumbs/{$result_row['image_location']}' />";
 //		$_SESSION['firephp']->log($result_row,'result_row');
 	  	$html .= "
-	  		<li>$thumbnail
-	  		<h3>{$result_row['title']}</h3>
+	  		<li>
+	  		<a href='view_media_item.php?item={$result_row['id']}'>$thumbnail{$result_row['title']}</a>
 	  		<!-- <form style='float: right; z-index: 100;' method='POST' action='view_media_item.php'><input type='submit' data-icon='arrow-r' data-iconpos='notext' /><input type='hidden' name='view' value='true' title='view item'></input><input type='hidden' name='media_item_id' value='{$result_row['id']}' /></form> -->
-	  		
-	  		<ul>
-	  		<div data-role='header'>
-	  			<form style='float:right; margin-top: 5px;' method='POST' action='add_media_item.php'><input id='edit_media_item_button' type='submit' data-icon='gear' data-iconpos='right' name='Edit' value='Edit' title='edit'></input><input type='hidden' name='edit' value='true' title='edit'></input><input type='hidden' name='media_item_id' value='{$result_row['id']}' /></form>
-	  			<a href='index.php' data-rel='back' data-icon='arrow-l'>Back</a>
-	  			<h3>View Item</h3>
-	  		</div>
 	  		";
-	  	$html .= mediaItemHtml($result_row['id']);
-	  	$html .= "
-	  		</ul>
+//	  		<ul>
+//	  		<div data-role='header'>
+//	  			<form style='float:right; margin-top: 5px;' method='POST' action='add_media_item.php'><input id='edit_media_item_button' type='submit' data-icon='gear' data-iconpos='right' name='Edit' value='Edit' title='edit'></input><input type='hidden' name='edit' value='true' title='edit'></input><input type='hidden' name='media_item_id' value='{$result_row['id']}' /></form>
+//	  			<a href='index.php' data-rel='back' data-icon='arrow-l'>Back</a>
+//	  			<h3>View Item</h3>
+//	  		</div>
+//	  		";
+//	  	$html .= mediaItemHtml($result_row['id']);
+//	  	$html .= "
+//	  		</ul>
+//	  		";
+		$html .= "
 	  		</li>
 	  		";
 	  }

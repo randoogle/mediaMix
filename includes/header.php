@@ -203,15 +203,25 @@ function mediaItemHtml($media_item_id)
 	  		}
 	  		
 	  	}
-	  	$rating = "<div>";
-	  	for ($i = 0; $i < $media_item_array['rating']; $i++)
-	  	{
-	  		$rating .= "<img src='images/star.png' />";
-	  	}
-	  	$rating .= "</div>";
+
+
 	  	$html .= "
 	  			<h3>{$media_item_array['title']}</h3>
 	  			<ul data-role='listview' data-theme='d'>";
+	  	
+    	if($media_item_array['storage_title'])
+  		{
+	  		$html .= "<li>{$media_item_array['storage_title']} [{$media_item_array['storage_slot_label']}]</li>";  			
+  		}
+  	  	if($media_item_array['rating'] > 0)
+	  	{
+		  	$html .= "<li><div>";
+		  	for ($i = 0; $i < $media_item_array['rating']; $i++)
+		  	{
+		  		$html .= "<img src='images/star.png' />";
+		  	}
+		  	$html .= "</div></li>";	  		
+	  	}
 	  	if($image)
 	  	{
 	  		$html .= "
@@ -219,8 +229,8 @@ function mediaItemHtml($media_item_id)
 	  		";
 	  	}
 		$html .= "
-			  		<li>$medium_html<h3>{$media_item_array['media_type_desc']}</h3>
-			  			$rating";
+			  		<li>$medium_html{$media_item_array['media_type_desc']}
+			  			";
   		if($media_item_array['length'])
   		{
   			$html .= "<br />{$media_item_array['length']}";
@@ -238,18 +248,16 @@ function mediaItemHtml($media_item_id)
   			$html .= "<br /><br />Tags: ";
   			foreach ($genre_array as $genre_row)
   			{
-  				$html .= "<span class='media_item_genre_title'>{$genre_row['genre_title']}</span>";	
+  				$html .= "<span class='media_item_genre_title'>{$genre_row['genre_title']}</span> ";	
   			}
-  		}
-  		if($media_item_array['storage_title'])
-  		{
-	  		$html .= "<li>{$media_item_array['storage_title']} [{$media_item_array['storage_slot_label']}]</li>";  			
+//  			$html .= "</span>";
   		}
       	if($media_item_array['notes'])
   		{
   			$html .= "<li><p>" . preg_replace('/\n/', '<br />', $media_item_array['notes']) . "</p></li>";
   		}
 	  $html .= "
+	  			</li>
 		  	</ul>
 	  ";
   }
