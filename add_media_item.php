@@ -108,8 +108,20 @@
 	  		,'{$_POST['media_item_type_input']}'";
 	  	if($_POST['media_item_length_hours_input'] || $_POST['media_item_length_minutes_input'])
 	  	{
+	  		//TODO: turns out this code doesn't work, as the interface itself is enforcing the 59 minute rule
+	  		//needs to be fixed at the interface level
+	  		$these_minutes = 0;
+	  		$these_hours = 0;
+	  		if($_POST['media_item_length_minutes_input'] >= 60)
+	  		{//allow for input of minutes converted to hours
+	  			$_SESSION['firephp']->log('longer than 60 minutes');
+	  			$these_hours = floor($_POST['media_item_length_minutes_input'] / 60);
+	  			$these_minutes = $_POST['media_item_length_minutes_input'] - ($these_hours * 60);
+	  		}
+	  		//in case there were any hours input
+	  		$these_hours += $_POST['media_item_length_hours_input'];
 	  		$query .= "
-			,'{$_POST['media_item_length_hours_input']}:{$_POST['media_item_length_minutes_input']}:00'
+			,'{$these_hours}:{$these_minutes}:00'
 	  		";	
 	  	}
 	  	else
@@ -117,7 +129,7 @@
 	  		$query .= ",null";
 	  	}
 	  	if(preg_match('@^http://.*@',$_POST['media_item_image_location_input']))
-	  	{
+	  	{//TODO:watch for images like this [http://imagelocation/something.php?image.jpg&h=200&w=100]
 	  		$filename = save_image($_POST['media_item_image_location_input'],'images/media_items/');
 	  		if(!$filename)
 	  		{
@@ -176,7 +188,7 @@
   	$html .= mediaItemHtml($media_id);
   	
   }
-  else {
+  else {//DISPLAY FORM
   	$html .= "
   	<div data-role='header' data-position='fixed'>
 	  	<a href='index.php' data-rel='back' data-icon='delete'>Cancel</a>
