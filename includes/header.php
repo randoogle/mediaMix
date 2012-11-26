@@ -271,11 +271,11 @@ function mediaItemHtml($media_item_id)
   	$html .= '
 	<meta name="viewport" content="width=device-width, initial-scale=1">
   	<meta charset="UTF-8">
-  	<link rel="stylesheet" href="includes/css/jquery.mobile-1.0rc1.min.css" />
+  	<link rel="stylesheet" href="includes/css/jquery.mobile-1.2.0.min.css" />
   	<link rel="stylesheet" href="includes/css/mediaMix.css" />
   	<link rel="apple-touch-icon" href="images/iOS_icon.png" />
-	<script type="text/javascript" src="includes/js/jquery-1.6.2.min.js"></script>
-	<script type="text/javascript" src="includes/js/jquery.mobile-1.0rc1.min.js"></script>
+	<script type="text/javascript" src="includes/js/jquery-1.8.3.min.js"></script>
+	<script type="text/javascript" src="includes/js/jquery.mobile-1.2.0.min.js"></script>
 	<script type="text/javascript" src="includes/js/media_mix.js"></script>
 	';
   }
