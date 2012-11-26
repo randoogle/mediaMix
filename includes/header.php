@@ -69,11 +69,13 @@
 		{
 			$_SESSION['firephp']->log($matches,'make_thumb() matches');
 			$source_image = null;
+			$image_type = strtolower($matches[2]);
 			
 			//read the source image
-			switch ($matches[2])
+			switch ($image_type)
 			{//determine image type
 				case 'jpg':
+				case 'jpeg':
 					$source_image = imagecreatefromjpeg($src);
 					break;
 				case 'png':
@@ -91,7 +93,7 @@
 					break;
 				default:
 					//unsupported image type
-					$_SESSION['firephp']->error("images of type \"{$matches[2]}\" are not supported");
+					$_SESSION['firephp']->error("images of type \"$image_type\" are not supported");
 					return false;
 					break;
 			}
@@ -111,9 +113,10 @@
 			imagecopyresized($virtual_image,$source_image,0,0,0,0,$desired_width,$desired_height,$width,$height);
 			
 			//create the physical thumbnail image to its destination
-			switch ($matches[2])
+			switch ($image_type)
 			{
 				case 'jpg':
+				case 'jpeg':
 					imagejpeg($virtual_image,$dest,100);
 					break;
 				case 'png':
@@ -137,7 +140,7 @@
 					break;
 				default:
 					//unsupported image type
-					$_SESSION['firephp']->error("images of type \"{$matches[2]}\" are not supported");
+					$_SESSION['firephp']->error("images of type \"$image_type\" are not supported");
 					return false;
 					break;
 			}
@@ -267,6 +270,7 @@ function mediaItemHtml($media_item_id)
   {
   	$html .= '
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+  	<meta charset="UTF-8">
   	<link rel="stylesheet" href="includes/css/jquery.mobile-1.0rc1.min.css" />
   	<link rel="stylesheet" href="includes/css/mediaMix.css" />
   	<link rel="apple-touch-icon" href="images/iOS_icon.png" />
