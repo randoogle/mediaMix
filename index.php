@@ -54,7 +54,7 @@ $html .= '
   $media_types = mysql2array($query_result);
   foreach($media_types as $media_type_row)
   {
-  	$html .= "<li><a class='query_link' href='all_media.php?table=media_items&field=media_types.media_type_id&value={$media_type_row['media_type_id']}'>{$media_type_row['media_type_desc']}</a></li>";
+  	$html .= "<li><a class='query_link' href='all_media.php?table=media_items&field=media_type_id&value={$media_type_row['media_type_id']}'>{$media_type_row['media_type_desc']}</a></li>";
   }
   $html .="
   		</ul>

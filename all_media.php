@@ -51,6 +51,7 @@
   }
   $query .=	"
   	order by media_items.title";
+  $_SESSION['firephp']->log($query);
   $results = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
   
   $results_array = mysql2array($results);
