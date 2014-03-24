@@ -4,11 +4,6 @@
 //     $hostname = $_SERVER['HTTP_HOST'];
     $hostname = "localhost";
     $database_host = $hostname;
-//     print "hostname = $hostname<br/>";
-    if($hostname == "rhunt.php.cs.dixie.edu")
-    {
-      $database_host = "mysql.cs.dixie.edu";#if it's the school server, then use this for dbpath
-    }
   
     
     #$maindomain ="rhunt.php.cs.dixie.edu";
