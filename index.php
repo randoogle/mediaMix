@@ -71,7 +71,18 @@ $html .= '
   	$html .= "<li><a class='query_link' href='all_media.php?table=storage_slots&value={$location['storage_location_id']}&sort=slot'>{$location['storage_title']}</a></li>";
   }
     $html.="
+    	</ul>
   	</li>
+    <li>
+    	Reports
+    	<ul data-role='listview'>
+    		<li><a class='query_link' href='all_media.php?table=report&report=dup_location&sort=none'>Duplicate Storage Locations</a></li>
+    		<li><a class='query_link' href='all_media.php?table=report&report=empty_location'>Empty Storage Locations</a></li>
+    		<li><a class='query_link' href='all_media.php?table=report&report=missing_rating'>No Rating</a></li>
+    		<li><a class='query_link' href='all_media.php?table=report&report=missing_thumb'>No Thumbnail</a></li>
+    		<li><a class='query_link' href='all_media.php?table=report&report=odd_time'>Odd Time</a></li>
+    	</ul>	
+    </li>
   	</ul>
   	
   	</div>

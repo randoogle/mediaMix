@@ -35,25 +35,57 @@
   		$_GET[$key] = addslashes($value);
   	}
   }
+  $grouping_field = "";
   switch ($_GET['table'])
   {
   	case 'media_items':
   		$query = "select * from  media_items ";
 	  	$query .= "where ";
 	  	$query .= "{$_GET['field']} = '{$_GET['value']}'";
+	  	$grouping_field = 'title';
   		break;
   	case 'media_genre':
   		$query = "select * from  media_items ";
 	  	$query .= "where ";
 	  	$query .= "media_items.id in (select media_genre.media_item_id from media_genre where media_genre.genre_id = '{$_GET['value']}')";
+	  	$grouping_field = 'title';
 	  	break;
   	case 'storage_slots':
   		$query = "select * from (select media_items.*,(select max(storage_slots.storage_slot_label) from storage_slots where storage_slots.storage_slot_id = media_items.storage_slot_id) as storage_label from  media_items ";
   		$query .= "where ";
   		$query .= "media_items.storage_slot_id in (select storage_slots.storage_slot_id from storage_slots where storage_slots.storage_location_id = '{$_GET['value']}')) as media_items ";
+  		$grouping_field = 'storage_label';
+  		break;
+  	case 'report':
+  		switch ($_GET['report'])
+  		{
+  			case 'dup_location':
+  				$query = "
+select media_items.*,
+storage_slots.storage_slot_label storage_label,
+storage_locations.storage_title
+  	from media_items,storage_slots,storage_locations
+    where exists(
+		SELECT a.storage_slot_id,count(*) FROM `media_items` as a
+		where a.storage_slot_id <> 0
+		    and a.storage_slot_id = media_items.storage_slot_id
+		group by a.storage_slot_id
+		having count(*) > 1
+	)
+    
+   and storage_slots.storage_slot_id = media_items.storage_slot_id
+   and storage_locations.storage_location_id = storage_slots.storage_location_id
+order by storage_title,storage_slot_label,title";
+			$grouping_field = 'storage_title';
+  				break;
+  			default:
+  				$query = "";
+  				break;
+  		}
   		break;
   	default:
   		$query = "select * from  media_items ";
+  		$grouping_field = 'title';
   		break;
   }
   switch ($_GET['sort'])
@@ -61,27 +93,28 @@
   	case 'slot':
   		$query .= "order by media_items.storage_label,media_items.title";
   		break;
+  	case 'none':
+  		$query .= "";
+  		break;
   	default:
   		$query .= "order by media_items.title";
   		break;
   }
-  $_SESSION['firephp']->log($query,'query');
   $results = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
   
   $results_array = mysql2array($results);
-  $_SESSION['firephp']->log($results_array,'results_array');
-  $_SESSION['firephp']->log($query,'query');
+//   $_SESSION['firephp']->log($results_array,'results_array');
+//   $_SESSION['firephp']->log($query,'query');
   if(count($results_array))
   {
   	$html .= "<ul data-filter='true' data-role='listview' data-theme='d'>";
 //  	$html .= "<li data-icon='plus'><a href='add_media_item.php'>Add New</a></li>";
-  	  $current_letter = 'A';
+  	  $current_letter = substr($results_array[0][$grouping_field],0,1);
 	  foreach($results_array as $result_row)
 	  {
-	  	if(strtoupper(substr($result_row['title'],0,1)) != $current_letter)
+	  	if(strtoupper(substr($result_row[$grouping_field],0,1)) != $current_letter)
 	  	{
-	  		$current_letter = strtoupper(substr($result_row['title'],0,1));
-//	  		$_SESSION['firephp']->log($current_letter,'current letter');
+	  		$current_letter = strtoupper(substr($result_row[$grouping_field],0,1));
 	  		$html .= "<li data-role='list-divider'>$current_letter</li>";
 	  	}
 	  	$thumbnail = "";
