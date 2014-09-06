@@ -59,6 +59,19 @@ $html .= '
   $html .="
   		</ul>
   	</li>
+  	<li>
+  		Storage Location
+  		<ul data-role='listview'>
+  	";
+  $query = "select * from storage_locations order by storage_locations.storage_title";
+  $query_result = mysql_query($query) or die(mysql_error());
+  $locations = mysql2array($query_result);
+  foreach($locations as $location)
+  {
+  	$html .= "<li><a class='query_link' href='all_media.php?table=storage_slots&value={$location['storage_location_id']}&sort=slot'>{$location['storage_title']}</a></li>";
+  }
+    $html.="
+  	</li>
   	</ul>
   	
   	</div>

@@ -7,6 +7,11 @@
 -- Server version: 5.5.28
 -- PHP Version: 5.3.10-1ubuntu3.4
 
+create database if not exists mediamix;
+use mediamix;
+
+grant all on `mediamix`.* to 'mediamix_user'@'localhost' identified by 'whatever';
+
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 

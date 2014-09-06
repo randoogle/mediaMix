@@ -24,7 +24,6 @@
   	<div data-role='content'>
   ";
   
-  $query = "select * from  media_items ";
 //	left outer join storage_slots on media_items.storage_slot_id = storage_slots.storage_slot_id 
 //	left outer join storage_locations on storage_slots.storage_location_id = storage_locations.storage_location_id
 //	left outer join media_types on media_types.media_type_id = media_items.media_type_id
@@ -39,22 +38,38 @@
   switch ($_GET['table'])
   {
   	case 'media_items':
+  		$query = "select * from  media_items ";
 	  	$query .= "where ";
 	  	$query .= "{$_GET['field']} = '{$_GET['value']}'";
   		break;
   	case 'media_genre':
+  		$query = "select * from  media_items ";
 	  	$query .= "where ";
 	  	$query .= "media_items.id in (select media_genre.media_item_id from media_genre where media_genre.genre_id = '{$_GET['value']}')";
 	  	break;
+  	case 'storage_slots':
+  		$query = "select * from (select media_items.*,(select max(storage_slots.storage_slot_label) from storage_slots where storage_slots.storage_slot_id = media_items.storage_slot_id) as storage_label from  media_items ";
+  		$query .= "where ";
+  		$query .= "media_items.storage_slot_id in (select storage_slots.storage_slot_id from storage_slots where storage_slots.storage_location_id = '{$_GET['value']}')) as media_items ";
+  		break;
   	default:
+  		$query = "select * from  media_items ";
   		break;
   }
-  $query .=	"
-  	order by media_items.title";
+  switch ($_GET['sort'])
+  {
+  	case 'slot':
+  		$query .= "order by media_items.storage_label,media_items.title";
+  		break;
+  	default:
+  		$query .= "order by media_items.title";
+  		break;
+  }
   $results = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
   
   $results_array = mysql2array($results);
   $_SESSION['firephp']->log($results_array,'results_array');
+  $_SESSION['firephp']->log($query,'query');
   if(count($results_array))
   {
   	$html .= "<ul data-filter='true' data-role='listview' data-theme='d'>";
@@ -76,8 +91,8 @@
 	  		!file_exists("images/media_items/thumbs/{$result_row['image_location']}")
 	  		)
 	  		{
-  				$_SESSION['firephp']->log("images/media_items/{$result_row['image_location']} exists");
-  				$_SESSION['firephp']->log("images/media_items/thumbs/{$result_row['image_location']} does not");
+//   				$_SESSION['firephp']->log("images/media_items/{$result_row['image_location']} exists");
+//   				$_SESSION['firephp']->log("images/media_items/thumbs/{$result_row['image_location']} does not");
   				try{
   					make_thumb("images/media_items/{$result_row['image_location']}", "images/media_items/thumbs/{$result_row['image_location']}", 50);
   				}
@@ -90,7 +105,22 @@
 //		$_SESSION['firephp']->log($result_row,'result_row');
 	  	$html .= "
 	  		<li>
-	  		<a href='view_media_item.php?item={$result_row['id']}'>$thumbnail{$result_row['title']}</a>
+	  		<a href='view_media_item.php?item={$result_row['id']}'>$thumbnail";
+	  		if(isset($result_row['storage_label']))
+	  		{
+	  			$html .= "<span class='storage_label'>{$result_row["storage_label"]}</span>";
+	  		}
+	  		$html .= "{$result_row['title']}";
+		  	if($result_row['rating'] > 0)
+		  	{
+		  		$html .= "<div class='star_rating'>";
+		  		for ($i = 0; $i < $result_row['rating']; $i++)
+		  		{
+		  		$html .= "<img src='images/star.png' />";
+			  	}
+		  		$html .= "</div>";
+		  	}
+	  	$html .= "</a>
 	  		<!-- <form style='float: right; z-index: 100;' method='POST' action='view_media_item.php'><input type='submit' data-icon='arrow-r' data-iconpos='notext' /><input type='hidden' name='view' value='true' title='view item'></input><input type='hidden' name='media_item_id' value='{$result_row['id']}' /></form> -->
 	  		";
 //	  		<ul>

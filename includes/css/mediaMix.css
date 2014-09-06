@@ -2,7 +2,7 @@ input,select,textarea {font-size: 16px;}
 .media_item_image {
 	max-width: 100%; width: auto; height: auto;
 }
-.media_item_genre_title
+/* .media_item_genre_title
 {
 	margin: 2px;
 	white-space: nowrap;
@@ -12,4 +12,15 @@ input,select,textarea {font-size: 16px;}
 	outline: 0 none !important;
 	text-shadow: 0 -1px 1px #254F7A;
 	line-height: 18pt;
+} */
+.storage_label {
+    background-color: #777;
+    border-radius: 8px;
+    color: #fff;
+    margin: 3px;
+    padding: 2px 6px;
+}
+.star_rating {
+    /* float: left; */
+    margin-top: 5px;
 }
