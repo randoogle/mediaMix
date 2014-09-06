@@ -118,11 +118,16 @@
 	  			$these_hours = floor($_POST['media_item_length_minutes_input'] / 60);
 	  			$these_minutes = $_POST['media_item_length_minutes_input'] - ($these_hours * 60);
 	  		}
+			else
+			{
+				$these_minutes = $_POST['media_item_length_minutes_input'];
+			}
 	  		//in case there were any hours input
 	  		$these_hours += $_POST['media_item_length_hours_input'];
 	  		$query .= "
 			,'{$these_hours}:{$these_minutes}:00'
 	  		";	
+			$_SESSION['firephp']->log("'{$these_hours}:{$these_minutes}:00'");
 	  	}
 	  	else
 	  	{
@@ -285,7 +290,7 @@
 	<label for='media_item_rating_input'>Rating</label>
 	<input name='media_item_rating_input' id='media_item_rating_input' type='range' max='5' min='1' value='{$media_item_array['rating']}'></input>
 	
-	<label for='media_item_image_location_input'>Thumbnail Location (relative)</label>
+	<label for='media_item_image_location_input'>Thumbnail Location (relative or URL)</label>
 	<input name='media_item_image_location_input' id='media_item_image_location_input' type='text' value='{$media_item_array['image_location']}'></input>
 
 	<label for='media_item_barcode_input'>Barcode</label>
@@ -301,6 +306,7 @@
 	$html .= "
 	<label for='storage_location_input'>Storage Location</label><a id='edit_storage_location_button' data-role='button' style='float:right; z-index: 10;' href='edit_storage_location.php' data-iconpos='notext' data-icon='gear'>Edit</a>
 	<select name='storage_location_input' id='storage_location_input' $storage_slot>
+	<option>None</option>
 	";
 	$query = "select * from storage_locations order by storage_title";
 	$query_result = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());

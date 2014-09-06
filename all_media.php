@@ -65,6 +65,7 @@
   		$query .= "order by media_items.title";
   		break;
   }
+  $_SESSION['firephp']->log($query,'query');
   $results = mysql_query($query) or $_SESSION['firephp']->error(mysql_error());
   
   $results_array = mysql2array($results);
@@ -91,6 +92,7 @@
 	  		!file_exists("images/media_items/thumbs/{$result_row['image_location']}")
 	  		)
 	  		{
+
 //   				$_SESSION['firephp']->log("images/media_items/{$result_row['image_location']} exists");
 //   				$_SESSION['firephp']->log("images/media_items/thumbs/{$result_row['image_location']} does not");
   				try{
@@ -105,6 +107,7 @@
 //		$_SESSION['firephp']->log($result_row,'result_row');
 	  	$html .= "
 	  		<li>
+
 	  		<a href='view_media_item.php?item={$result_row['id']}'>$thumbnail";
 	  		if(isset($result_row['storage_label']))
 	  		{
