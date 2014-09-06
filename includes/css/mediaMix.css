@@ -2,17 +2,18 @@ input,select,textarea {font-size: 16px;}
 .media_item_image {
 	max-width: 100%; width: auto; height: auto;
 }
-/* .media_item_genre_title
+.media_item_genre_title
 {
 	margin: 2px;
 	white-space: nowrap;
-	padding: 2px;
+	padding: 2px 5px;
 	background-color: #6F97BE;
+	border-radius: 6px;
 	color: #fff;
 	outline: 0 none !important;
 	text-shadow: 0 -1px 1px #254F7A;
 	line-height: 18pt;
-} */
+}
 .storage_label {
     background-color: #777;
     border-radius: 8px;
